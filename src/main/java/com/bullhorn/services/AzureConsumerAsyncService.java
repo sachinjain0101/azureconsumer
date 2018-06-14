@@ -17,6 +17,7 @@ import java.util.List;
 public class AzureConsumerAsyncService {
 
     @Autowired
+    @Qualifier("consumerTaskExecutor")
     TaskExecutor executor;
 
     private AzureConfig config;

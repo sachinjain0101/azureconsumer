@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -56,11 +59,15 @@ public class AzureConsumer implements Runnable {
     public void run() {
         LOGGER.info("AzureConsumer is running for {}", fos.getName());
         try {
+            consumers = new ArrayList<>();
             registerReceiver(receiveClient);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private List<TblAzureConsumer> consumers;
+
 
     private void registerReceiver(QueueClient queueClient) throws Exception {
         queueClient.registerMessageHandler(new IMessageHandler() {
@@ -70,14 +77,11 @@ public class AzureConsumer implements Runnable {
                                                    String receivedMessage = new String(message.getBody(), UTF_8);
                                                    String messageId = message.getMessageId();
                                                    Long sequenceNumber = message.getSequenceNumber();
-                                                   // message validation
-                                                   //if (validateMessage(receivedMessage, messageId) && validateIntegrationKey(message.getProperties(), messageId)) {
-                                                   LOGGER.info("\n************* {}\t{} **************\n\n", sequenceNumber, receivedMessage);
-                                                   azureConsumerDAO.save(new TblAzureConsumer(messageId, receivedMessage, sequenceNumber));
-                                                   //String integrationKey = message.getProperties().get("IntegrationKey");
-                                                   //LOGGER.info("************** {}",integrationKey);
-                                                   //processAssignment(receivedMessage,messageId,integrationKey);
-                                                   //}
+                                                   Instant instant = Instant.now();
+                                                   long recordID = instant.getEpochSecond();
+
+                                                   LOGGER.info("{}\t{}", sequenceNumber, receivedMessage);
+                                                   azureConsumerDAO.save(new TblAzureConsumer(recordID, messageId, sequenceNumber, receivedMessage, fos.getRecordId()));
                                                    return CompletableFuture.completedFuture(null);
                                                }
 

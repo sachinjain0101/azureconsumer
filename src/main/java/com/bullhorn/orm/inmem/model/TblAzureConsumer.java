@@ -1,9 +1,8 @@
 package com.bullhorn.orm.inmem.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -12,21 +11,45 @@ public class TblAzureConsumer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @NotNull
+    @Column(name = "RecordID")
+    private long recordID;
     @Id
-    private String messageId;
+    @NotNull
+    @Size(min = 1, max = 200)
+    @Column(name = "MessageID")
+    private String messageID;
+    @NotNull
+    @Column(name = "SequenceNumber")
+    private long sequenceNumber;
     @Lob
-    @Column(name="CONTENT", length=5000000)
+    @Column(name = "Message", length=5000000)
     private String message;
-    private Long sequenceNumber;
-    private String client;
-    private String integrationKey;
+    @Column(name = "FrontOfficeSystemRecordID")
+    private Integer frontOfficeSystemRecordID;
 
-    public String getMessageId() {
-        return messageId;
+    public long getRecordID() {
+        return recordID;
     }
 
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
+    public void setRecordID(long recordID) {
+        this.recordID = recordID;
+    }
+
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
+
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setSequenceNumber(long sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
     }
 
     public String getMessage() {
@@ -37,52 +60,20 @@ public class TblAzureConsumer implements Serializable {
         this.message = message;
     }
 
-    public Long getSequenceNumber() {
-        return sequenceNumber;
+    public Integer getFrontOfficeSystemRecordID() {
+        return frontOfficeSystemRecordID;
     }
 
-    public void setSequenceNumber(Long sequenceNumber) {
+    public void setFrontOfficeSystemRecordID(Integer frontOfficeSystemRecordID) {
+        this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
+    }
+
+    public TblAzureConsumer(@NotNull long recordID, @NotNull @Size(min = 1, max = 200) String messageID, @NotNull long sequenceNumber, String message, Integer frontOfficeSystemRecordID) {
+        this.recordID = recordID;
+        this.messageID = messageID;
         this.sequenceNumber = sequenceNumber;
-    }
-
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
-    }
-
-    public String getIntegrationKey() {
-        return integrationKey;
-    }
-
-    public void setIntegrationKey(String integrationKey) {
-        this.integrationKey = integrationKey;
-    }
-
-    public TblAzureConsumer(String messageId, String client, String integrationKey) {
-        this.messageId = messageId;
-        this.client = client;
-        this.integrationKey = integrationKey;
-    }
-
-    public TblAzureConsumer(String messageId, String message, String client, String integrationKey) {
-        this.messageId = messageId;
         this.message = message;
-        this.client = client;
-        this.integrationKey = integrationKey;
-    }
-
-    public TblAzureConsumer(String messageId, String message) {
-        this.messageId = messageId;
-        this.message = message;
-    }
-
-    public TblAzureConsumer(String messageId, String message, Long sequenceNumber) {
-        this.messageId = messageId;
-        this.message = message;
-        this.sequenceNumber = sequenceNumber;
+        this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
     }
 
     public TblAzureConsumer() {
@@ -93,26 +84,27 @@ public class TblAzureConsumer implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TblAzureConsumer that = (TblAzureConsumer) o;
-        return Objects.equals(messageId, that.messageId) &&
+        return recordID == that.recordID &&
+                sequenceNumber == that.sequenceNumber &&
+                Objects.equals(messageID, that.messageID) &&
                 Objects.equals(message, that.message) &&
-                Objects.equals(client, that.client) &&
-                Objects.equals(integrationKey, that.integrationKey);
+                Objects.equals(frontOfficeSystemRecordID, that.frontOfficeSystemRecordID);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(messageId, message, client, integrationKey);
+        return Objects.hash(recordID, messageID, sequenceNumber, message, frontOfficeSystemRecordID);
     }
 
     @Override
     public String toString() {
         return "TblAzureConsumer{" +
-                "messageId='" + messageId + '\'' +
-                ", client='" + client + '\'' +
-                ", integrationKey='" + integrationKey + '\'' +
-                ", sequenceNumber='" + sequenceNumber + '\'' +
+                "recordID=" + recordID +
+                ", messageID='" + messageID + '\'' +
+                ", sequenceNumber=" + sequenceNumber +
                 ", message='" + message + '\'' +
+                ", frontOfficeSystemRecordID=" + frontOfficeSystemRecordID +
                 '}';
     }
 }
