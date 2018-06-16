@@ -10,8 +10,11 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -24,16 +27,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author sachin.jain
  */
 @Entity
-@Table(name = "tblIntegration_ServiceBusMessages",schema = "dbo")
-@XmlRootElement
+@Table(name = "tblIntegration_ServiceBusMessages", schema = "dbo")
 public class TblIntegrationServiceBusMessages implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "RecordID")
-    private long recordID;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "RecordID")
+    private Long recordID;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 200)
@@ -47,37 +49,25 @@ public class TblIntegrationServiceBusMessages implements Serializable {
     private String message;
     @Column(name = "FrontOfficeSystemRecordID")
     private Integer frontOfficeSystemRecordID;
-    @Column(name = "CreatedDateTime")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDateTime;
 
     public TblIntegrationServiceBusMessages() {
     }
 
-    public TblIntegrationServiceBusMessages(String messageID) {
-        this.messageID = messageID;
-    }
-
-    public TblIntegrationServiceBusMessages(String messageID, long recordID, long sequenceNumber) {
-        this.messageID = messageID;
+    public TblIntegrationServiceBusMessages(Long recordID) {
         this.recordID = recordID;
-        this.sequenceNumber = sequenceNumber;
     }
 
-    public TblIntegrationServiceBusMessages(@NotNull long recordID, @NotNull @Size(min = 1, max = 200) String messageID, @NotNull long sequenceNumber, String message, Integer frontOfficeSystemRecordID) {
+    public TblIntegrationServiceBusMessages(Long recordID, String messageID, long sequenceNumber) {
         this.recordID = recordID;
         this.messageID = messageID;
         this.sequenceNumber = sequenceNumber;
-        this.message = message;
-        this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
-        this.createdDateTime = new Date();
     }
 
-    public long getRecordID() {
+    public Long getRecordID() {
         return recordID;
     }
 
-    public void setRecordID(long recordID) {
+    public void setRecordID(Long recordID) {
         this.recordID = recordID;
     }
 
@@ -113,18 +103,17 @@ public class TblIntegrationServiceBusMessages implements Serializable {
         this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
     }
 
-    public Date getCreatedDateTime() {
-        return createdDateTime;
-    }
-
-    public void setCreatedDateTime(Date createdDateTime) {
-        this.createdDateTime = createdDateTime;
+    public TblIntegrationServiceBusMessages(@NotNull @Size(min = 1, max = 200) String messageID, @NotNull long sequenceNumber, String message, Integer frontOfficeSystemRecordID) {
+        this.messageID = messageID;
+        this.sequenceNumber = sequenceNumber;
+        this.message = message;
+        this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (messageID != null ? messageID.hashCode() : 0);
+        hash += (recordID != null ? recordID.hashCode() : 0);
         return hash;
     }
 
@@ -135,7 +124,7 @@ public class TblIntegrationServiceBusMessages implements Serializable {
             return false;
         }
         TblIntegrationServiceBusMessages other = (TblIntegrationServiceBusMessages) object;
-        if ((this.messageID == null && other.messageID != null) || (this.messageID != null && !this.messageID.equals(other.messageID))) {
+        if ((this.recordID == null && other.recordID != null) || (this.recordID != null && !this.recordID.equals(other.recordID))) {
             return false;
         }
         return true;
@@ -143,7 +132,7 @@ public class TblIntegrationServiceBusMessages implements Serializable {
 
     @Override
     public String toString() {
-        return "com.bullhorn.orm.refreshWork.model.TblIntegrationServiceBusMessages[ messageID=" + messageID + " ]";
+        return "com.bullhorn.orm.refreshwork.model.TblIntegrationServiceBusMessages[ recordID=" + recordID + " ]";
     }
 
 }

@@ -39,8 +39,7 @@ public class DataSwapper{
         if(Iterables.size(tblAzureConsumers)>0) {
             //LOGGER.info("Got some data to swap");
             List<TblIntegrationServiceBusMessages> tblIntegrationServiceBusMessages = StreamSupport.stream(tblAzureConsumers.spliterator(), false)
-                    .map(m -> new TblIntegrationServiceBusMessages(m.getRecordID()
-                            , m.getMessageID()
+                    .map(m -> new TblIntegrationServiceBusMessages(m.getMessageID()
                             , m.getSequenceNumber()
                             , m.getMessage()
                             , m.getFrontOfficeSystemRecordID()))

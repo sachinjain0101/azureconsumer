@@ -11,9 +11,6 @@ public class TblAzureConsumer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotNull
-    @Column(name = "RecordID")
-    private long recordID;
     @Id
     @NotNull
     @Size(min = 1, max = 200)
@@ -27,14 +24,6 @@ public class TblAzureConsumer implements Serializable {
     private String message;
     @Column(name = "FrontOfficeSystemRecordID")
     private Integer frontOfficeSystemRecordID;
-
-    public long getRecordID() {
-        return recordID;
-    }
-
-    public void setRecordID(long recordID) {
-        this.recordID = recordID;
-    }
 
     public String getMessageID() {
         return messageID;
@@ -68,8 +57,7 @@ public class TblAzureConsumer implements Serializable {
         this.frontOfficeSystemRecordID = frontOfficeSystemRecordID;
     }
 
-    public TblAzureConsumer(@NotNull long recordID, @NotNull @Size(min = 1, max = 200) String messageID, @NotNull long sequenceNumber, String message, Integer frontOfficeSystemRecordID) {
-        this.recordID = recordID;
+    public TblAzureConsumer(@NotNull @Size(min = 1, max = 200) String messageID, @NotNull long sequenceNumber, String message, Integer frontOfficeSystemRecordID) {
         this.messageID = messageID;
         this.sequenceNumber = sequenceNumber;
         this.message = message;
@@ -84,8 +72,7 @@ public class TblAzureConsumer implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TblAzureConsumer that = (TblAzureConsumer) o;
-        return recordID == that.recordID &&
-                sequenceNumber == that.sequenceNumber &&
+        return sequenceNumber == that.sequenceNumber &&
                 Objects.equals(messageID, that.messageID) &&
                 Objects.equals(message, that.message) &&
                 Objects.equals(frontOfficeSystemRecordID, that.frontOfficeSystemRecordID);
@@ -94,13 +81,12 @@ public class TblAzureConsumer implements Serializable {
     @Override
     public int hashCode() {
 
-        return Objects.hash(recordID, messageID, sequenceNumber, message, frontOfficeSystemRecordID);
+        return Objects.hash(messageID, sequenceNumber, message, frontOfficeSystemRecordID);
     }
 
     @Override
     public String toString() {
         return "TblAzureConsumer{" +
-                "recordID=" + recordID +
                 ", messageID='" + messageID + '\'' +
                 ", sequenceNumber=" + sequenceNumber +
                 ", message='" + message + '\'' +

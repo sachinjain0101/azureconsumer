@@ -33,14 +33,13 @@ public class ServiceBusMessagesDAOExtImpl implements ServiceBusMessagesDAOExt {
     @Override
     public void batchInsert(List<TblIntegrationServiceBusMessages> msgs) {
         int[] updateCounts = jdbcTemplate.batchUpdate(
-                "INSERT INTO tblIntegration_ServiceBusMessages (FrontOfficeSystemRecordID, Message, RecordID, SequenceNumber, MessageID) values (?, ?, ?, ?, ?)",
+                "INSERT INTO tblIntegration_ServiceBusMessages (FrontOfficeSystemRecordID, Message, SequenceNumber, MessageID) values (?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         ps.setInt(1, msgs.get(i).getFrontOfficeSystemRecordID());
                         ps.setString(2, msgs.get(i).getMessage());
                         ps.setLong(3, msgs.get(i).getSequenceNumber());
-                        ps.setLong(4, msgs.get(i).getRecordID());
-                        ps.setString(5, msgs.get(i).getMessageID());
+                        ps.setString(4, msgs.get(i).getMessageID());
                     }
 
                     public int getBatchSize() {

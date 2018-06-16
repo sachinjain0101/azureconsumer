@@ -3,19 +3,15 @@ package com.bullhorn.services;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.inmem.model.TblAzureConsumer;
 import com.bullhorn.orm.timecurrent.dao.ErrorsDAO;
-import com.bullhorn.orm.timecurrent.model.TblIntegrationErrors;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.microsoft.azure.servicebus.*;
 import com.microsoft.azure.servicebus.primitives.ConnectionStringBuilder;
 import com.microsoft.azure.servicebus.primitives.ServiceBusException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,8 +20,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class AzureConsumer implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AzureConsumer.class);
-    private static final String NOT_APPLICABLE = "NA";
-    private static final String AZURE_CONSUMER = "AzureConsumer";
 
     private TblIntegrationFrontOfficeSystem fos;
     private QueueClient receiveClient;
@@ -77,11 +71,9 @@ public class AzureConsumer implements Runnable {
                                                    String receivedMessage = new String(message.getBody(), UTF_8);
                                                    String messageId = message.getMessageId();
                                                    Long sequenceNumber = message.getSequenceNumber();
-                                                   Instant instant = Instant.now();
-                                                   long recordID = instant.getEpochSecond();
 
                                                    LOGGER.info("{}\t{}", sequenceNumber, receivedMessage);
-                                                   azureConsumerDAO.save(new TblAzureConsumer(recordID, messageId, sequenceNumber, receivedMessage, fos.getRecordId()));
+                                                   azureConsumerDAO.save(new TblAzureConsumer(messageId, sequenceNumber, receivedMessage, fos.getRecordId()));
                                                    return CompletableFuture.completedFuture(null);
                                                }
 
@@ -92,21 +84,6 @@ public class AzureConsumer implements Runnable {
                                            },
                 // 1 concurrent call, messages are auto-completed, auto-renew duration
                 new MessageHandlerOptions(100, true, Duration.ofMinutes(10)));
-    }
-
-    private TblIntegrationErrors getErrorObject(Exception e, String messageId, String methodName) {
-        TblIntegrationErrors error = new TblIntegrationErrors();
-
-        error.setIntegrationKey(NOT_APPLICABLE);
-        error.setClient(NOT_APPLICABLE);
-        error.setFrontOfficeSystemRecordId(fos.getRecordId());
-        error.setProcessName(AZURE_CONSUMER);
-        error.setMessageId(messageId);
-        error.setErrorSource(methodName);
-        error.setErrorCode(e.getMessage());
-        error.setErrorDescription(ExceptionUtils.getStackTrace(e));
-        error.setCreateDateTime(new Date());
-        return error;
     }
 
 }
