@@ -20,7 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class AzureConsumer implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AzureConsumer.class);
-
+    private static final String INTEGRATION_KEY = "IntegrationKey";
     private TblIntegrationFrontOfficeSystem fos;
     private QueueClient receiveClient;
     private String topicName;
@@ -72,8 +72,13 @@ public class AzureConsumer implements Runnable {
                                                    String messageId = message.getMessageId();
                                                    Long sequenceNumber = message.getSequenceNumber();
 
+                                                   String integrationKey = "";
+                                                   if (message.getProperties()!=null && message.getProperties().containsKey(INTEGRATION_KEY))
+                                                       integrationKey = message.getProperties().get(INTEGRATION_KEY);
+
                                                    LOGGER.info("{}\t{}", sequenceNumber, receivedMessage);
-                                                   azureConsumerDAO.save(new TblAzureConsumer(messageId, sequenceNumber, receivedMessage, fos.getRecordId()));
+                                                   azureConsumerDAO.save(new TblAzureConsumer(messageId, sequenceNumber, integrationKey, receivedMessage, fos.getRecordId()));
+
                                                    return CompletableFuture.completedFuture(null);
                                                }
 

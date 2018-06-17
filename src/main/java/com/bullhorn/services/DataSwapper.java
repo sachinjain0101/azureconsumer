@@ -41,6 +41,7 @@ public class DataSwapper{
             List<TblIntegrationServiceBusMessages> tblIntegrationServiceBusMessages = StreamSupport.stream(tblAzureConsumers.spliterator(), false)
                     .map(m -> new TblIntegrationServiceBusMessages(m.getMessageID()
                             , m.getSequenceNumber()
+                            , m.getIntegrationKey()
                             , m.getMessage()
                             , m.getFrontOfficeSystemRecordID()))
                     .collect(Collectors.toList());
