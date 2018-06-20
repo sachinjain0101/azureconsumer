@@ -46,7 +46,7 @@ public class DataSwapper{
                             , m.getFrontOfficeSystemRecordID()))
                     .collect(Collectors.toList());
 
-
+            tblIntegrationServiceBusMessages.forEach((m)->LOGGER.info("{}",m.getMessage().length()));
             serviceBusMessagesDAO.batchInsert(tblIntegrationServiceBusMessages);
             azureConsumerDAO.deleteAll(tblAzureConsumers);
         }
