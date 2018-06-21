@@ -36,7 +36,7 @@ public class ConsumerController {
 		List<TblAzureConsumer> lst = new ArrayList<>();
 		while (itr.hasNext()){
 			TblAzureConsumer a = itr.next();
-			LOGGER.info(a.toString());
+			LOGGER.debug(a.toString());
 			lst.add(a);
 		}
 		return lst;
@@ -49,7 +49,7 @@ public class ConsumerController {
 		List<TblAzureConsumer> lst = new ArrayList<>();
 		while (itr.hasNext()){
 			TblAzureConsumer a = itr.next();
-			//LOGGER.info(a.toString());
+			//LOGGER.debug(a.toString());
 			lst.add(a);
 		}
 		return lst.size();

@@ -51,7 +51,7 @@ public class AzureConsumer implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.info("AzureConsumer is running for {}", fos.getName());
+        LOGGER.debug("AzureConsumer is running for {}", fos.getName());
         try {
             consumers = new ArrayList<>();
             registerReceiver(receiveClient);
@@ -76,7 +76,7 @@ public class AzureConsumer implements Runnable {
                                                    if (message.getProperties()!=null && message.getProperties().containsKey(INTEGRATION_KEY))
                                                        integrationKey = message.getProperties().get(INTEGRATION_KEY);
 
-                                                   LOGGER.info("{}\t{}", sequenceNumber, receivedMessage);
+                                                   LOGGER.debug("{}\t{}", sequenceNumber, receivedMessage);
                                                    azureConsumerDAO.save(new TblAzureConsumer(messageId, sequenceNumber, integrationKey, receivedMessage, fos.getRecordId()));
 
                                                    return CompletableFuture.completedFuture(null);

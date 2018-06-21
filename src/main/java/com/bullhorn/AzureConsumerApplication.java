@@ -60,7 +60,7 @@ public class AzureConsumerApplication {
 		AzureConfig config = new AzureConfig();
 		config.setLstFOS(frontOfficeSystemDao.findByStatus(true));
 		config.setTopicName(env.getProperty("azureconsumer.topicName"));
-		LOGGER.info("{}",config.toString());
+		LOGGER.debug("{}",config.toString());
 		return  config;
 	}
 
@@ -68,7 +68,7 @@ public class AzureConsumerApplication {
 	@Bean("consumerTaskExecutor")
 	@DependsOn("azureConfig")
 	public TaskExecutor consumerTaskExecutor() {
-		LOGGER.info("Starting Consumer Task Executor");
+		LOGGER.debug("Starting Consumer Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		//TODO: Refactor the Threadpool Size construct
 		executor.setCorePoolSize(azureConfig().getLstFOS().size());
@@ -81,7 +81,7 @@ public class AzureConsumerApplication {
 	@Bean("swapperTaskExecutor")
 	@DependsOn("consumerTaskExecutor")
 	public TaskExecutor swapperTaskExecutor() {
-		LOGGER.info("Starting Swapper Task Executor");
+		LOGGER.debug("Starting Swapper Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(1);
 		executor.setMaxPoolSize(1);
@@ -101,16 +101,16 @@ public class AzureConsumerApplication {
 
 	@EventListener
 	public void init(ContextRefreshedEvent event) {
-		LOGGER.info("Starting Azure Consumer");
+		LOGGER.debug("Starting Azure Consumer");
 		this.consumers = azureConsumerAsycSvcInit().executeAsynchronously();
-		LOGGER.info("Starting Data Swapper");
+		LOGGER.debug("Starting Data Swapper");
 		DataSwapper dataSwapper = new DataSwapper(serviceBusMessagesDAO,azureConsumerDAO);
 		dataSwapper.run();
 	}
 
 	@PreDestroy
 	public void destroy() {
-		LOGGER.info("Shutting down Azure Consumers");
+		LOGGER.debug("Shutting down Azure Consumers");
 		consumers.forEach((consumer)->{
 			try {
 				consumer.close();

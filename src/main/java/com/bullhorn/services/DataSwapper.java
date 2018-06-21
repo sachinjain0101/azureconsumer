@@ -33,11 +33,11 @@ public class DataSwapper{
 
     @Scheduled(fixedDelay = 5000, initialDelay = 3000)
     public void run() {
-        LOGGER.info("Running the Data Swapper");
+        LOGGER.debug("Running the Data Swapper");
         Iterable<TblAzureConsumer> tblAzureConsumers = azureConsumerDAO.findAll();
 
         if(Iterables.size(tblAzureConsumers)>0) {
-            //LOGGER.info("Got some data to swap");
+            //LOGGER.debug("Got some data to swap");
             List<TblIntegrationServiceBusMessages> tblIntegrationServiceBusMessages = StreamSupport.stream(tblAzureConsumers.spliterator(), false)
                     .map(m -> new TblIntegrationServiceBusMessages(m.getMessageID()
                             , m.getSequenceNumber()
@@ -46,7 +46,7 @@ public class DataSwapper{
                             , m.getFrontOfficeSystemRecordID()))
                     .collect(Collectors.toList());
 
-            tblIntegrationServiceBusMessages.forEach((m)->LOGGER.info("{}",m.getMessage().length()));
+            tblIntegrationServiceBusMessages.forEach((m)->LOGGER.debug("{}",m.getMessage().length()));
             serviceBusMessagesDAO.batchInsert(tblIntegrationServiceBusMessages);
             azureConsumerDAO.deleteAll(tblAzureConsumers);
         }
