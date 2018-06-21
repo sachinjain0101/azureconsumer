@@ -18,55 +18,55 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.util.HashMap;
 
+@Primary
 @Configuration
 @PropertySource({"file:orm-multi-db.properties"})
-@EnableJpaRepositories(basePackages = "com.bullhorn.orm.inmem.dao", entityManagerFactoryRef = "inMemEntityManager", transactionManagerRef = "inMemTransactionManager")
-public class InMemDBConfig {
-
+@EnableJpaRepositories(basePackages = "com.bullhorn.orm.timecurrent.dao", entityManagerFactoryRef = "timeCurrentEntityManager", transactionManagerRef = "timeCurrentTransactionManager")
+public class TimeCurrentDBConfig {
     @Autowired
     private Environment env;
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean inMemEntityManager() {
+    public LocalContainerEntityManagerFactoryBean timeCurrentEntityManager() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(inMemDataSource());
-        em.setPackagesToScan(new String[]{"com.bullhorn.orm.inmem.model"});
+        em.setDataSource(timeCurrentDataSource());
+        em.setPackagesToScan(new String[]{"com.bullhorn.orm.timecurrent.model"});
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         HashMap<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "create-drop");
-        properties.put("hibernate.dialect", env.getProperty("org.hibernate.dialect.HSQLDialect"));
-
+        properties.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        properties.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        properties.put("hibernate.show_sql",env.getProperty("hibernate.show_sql"));
+        properties.put("hibernate.cache.use_second_level_cache",env.getProperty("hibernate.cache.use_second_level_cache"));
+        properties.put("hibernate.cache.use_query_cache",env.getProperty("hibernate.cache.use_query_cache"));
         em.setJpaPropertyMap(properties);
         return em;
     }
 
     @Bean
-    public DataSource inMemDataSource() {
+    public DataSource timeCurrentDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("hsqldb.jdbc.driveClassName"));
-        dataSource.setUrl(env.getProperty("hsqldb.jdbc.url"));
-        dataSource.setUsername("sa");
-        dataSource.setPassword("nothing");
+        dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+        dataSource.setUrl(env.getProperty("timeCurrent.jdbc.url"));
         return dataSource;
     }
 
     @Bean
-    public PlatformTransactionManager inMemTransactionManager() {
+    public PlatformTransactionManager timeCurrentTransactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(inMemEntityManager().getObject());
+        transactionManager.setEntityManagerFactory(timeCurrentEntityManager().getObject());
         return transactionManager;
     }
 
     @Primary
-    @Bean(name = "inMemJdbcTemplate")
-    public JdbcTemplate inMemJdbcTemplate() {
-        return new JdbcTemplate(inMemDataSource());
+    @Bean(name = "timeCurrentJdbcTemplate")
+    public JdbcTemplate metricsJdbcTemplate() {
+        return new JdbcTemplate(timeCurrentDataSource());
     }
 
     @Primary
-    @Bean(name = "inMemNamedJdbcTemplate")
+    @Bean(name = "timeCurrentNamedJdbcTemplate")
     public NamedParameterJdbcTemplate metricsNamedJdbcTemplate() {
-        return new NamedParameterJdbcTemplate(inMemDataSource());
+        return new NamedParameterJdbcTemplate(timeCurrentDataSource());
     }
 }
