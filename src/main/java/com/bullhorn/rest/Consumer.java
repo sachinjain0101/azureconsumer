@@ -18,29 +18,16 @@ import java.util.List;
 @RestController
 @Api(value = "Base resource for Opera-DataMapper")
 @RequestMapping("/maps")
-public class ConsumerController {
+public class Consumer {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
 
     final AzureConsumerDAO azureConsumerDAO;
 
     @Autowired
-    public ConsumerController(AzureConsumerDAO azureConsumerDAO) {
+    public Consumer(AzureConsumerDAO azureConsumerDAO) {
         this.azureConsumerDAO = azureConsumerDAO;
     }
-
-	@ApiOperation(value="Check data in InMemory database")
-	@RequestMapping(value = "/consumed", method = RequestMethod.GET)
-	public List<TblAzureConsumer> consumed() {
-		Iterator<TblAzureConsumer> itr =  azureConsumerDAO.findAll().iterator();
-		List<TblAzureConsumer> lst = new ArrayList<>();
-		while (itr.hasNext()){
-			TblAzureConsumer a = itr.next();
-			LOGGER.debug(a.toString());
-			lst.add(a);
-		}
-		return lst;
-	}
 
 	@ApiOperation(value="Check count in InMemory database")
 	@RequestMapping(value = "/consumedCount", method = RequestMethod.GET)
@@ -49,7 +36,6 @@ public class ConsumerController {
 		List<TblAzureConsumer> lst = new ArrayList<>();
 		while (itr.hasNext()){
 			TblAzureConsumer a = itr.next();
-			//LOGGER.debug(a.toString());
 			lst.add(a);
 		}
 		return lst.size();
