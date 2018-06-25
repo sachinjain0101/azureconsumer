@@ -5,33 +5,25 @@ import com.bullhorn.orm.inmem.model.TblAzureConsumer;
 import com.bullhorn.orm.refreshWork.dao.ServiceBusMessagesDAO;
 import com.bullhorn.orm.refreshWork.model.TblIntegrationServiceBusMessages;
 import com.google.common.collect.Iterables;
-import org.apache.commons.collections4.IterableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@Component
-public class DataSwapper{
+public class DataSwapper implements Runnable{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSwapper.class);
 
-    ServiceBusMessagesDAO serviceBusMessagesDAO;
-    AzureConsumerDAO azureConsumerDAO;
+    private ServiceBusMessagesDAO serviceBusMessagesDAO;
+    private AzureConsumerDAO azureConsumerDAO;
 
-    @Autowired
     public DataSwapper(ServiceBusMessagesDAO serviceBusMessagesDAO, AzureConsumerDAO azureConsumerDAO){
         this.serviceBusMessagesDAO = serviceBusMessagesDAO;
         this.azureConsumerDAO = azureConsumerDAO;
     }
 
-    @Scheduled(fixedDelay = 5000, initialDelay = 3000)
     public void run() {
         LOGGER.debug("Running the Data Swapper");
         Iterable<TblAzureConsumer> tblAzureConsumers = azureConsumerDAO.findAll();

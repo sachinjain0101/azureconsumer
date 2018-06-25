@@ -2,7 +2,6 @@ package com.bullhorn.services;
 
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.inmem.model.TblAzureConsumer;
-import com.bullhorn.orm.timecurrent.dao.ErrorsDAO;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.microsoft.azure.servicebus.*;
 import com.microsoft.azure.servicebus.primitives.ConnectionStringBuilder;
@@ -11,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -23,15 +20,13 @@ public class AzureConsumer implements Runnable {
     private static final String INTEGRATION_KEY = "IntegrationKey";
     private TblIntegrationFrontOfficeSystem fos;
     private QueueClient receiveClient;
-    private String topicName;
-    private AzureConsumerDAO azureConsumerDAO;
-    private ErrorsDAO errorsDAO;
+    private final String topicName;
+    private final AzureConsumerDAO azureConsumerDAO;
 
-    public AzureConsumer(TblIntegrationFrontOfficeSystem fos, String topicName, AzureConsumerDAO azureConsumerDAO, ErrorsDAO errorsDAO) {
+    public AzureConsumer(TblIntegrationFrontOfficeSystem fos, String topicName, AzureConsumerDAO azureConsumerDAO) {
         this.fos = fos;
         this.topicName = topicName;
         this.azureConsumerDAO = azureConsumerDAO;
-        this.errorsDAO = errorsDAO;
         setReceiveClient();
     }
 
@@ -39,7 +34,7 @@ public class AzureConsumer implements Runnable {
         return receiveClient;
     }
 
-    public void setReceiveClient() {
+    private void setReceiveClient() {
         try {
             this.receiveClient = new QueueClient(new ConnectionStringBuilder(fos.getAzureEndPoint(), topicName), ReceiveMode.PEEKLOCK);
         } catch (InterruptedException e) {
@@ -53,15 +48,11 @@ public class AzureConsumer implements Runnable {
     public void run() {
         LOGGER.debug("AzureConsumer is running for {}", fos.getName());
         try {
-            consumers = new ArrayList<>();
             registerReceiver(receiveClient);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private List<TblAzureConsumer> consumers;
-
 
     private void registerReceiver(QueueClient queueClient) throws Exception {
         queueClient.registerMessageHandler(new IMessageHandler() {
@@ -84,7 +75,7 @@ public class AzureConsumer implements Runnable {
 
                                                // callback invoked when the message handler has an exception to report
                                                public void notifyException(Throwable throwable, ExceptionPhase exceptionPhase) {
-                                                   System.out.printf(exceptionPhase + "-" + throwable.getMessage());
+                                                   LOGGER.error(exceptionPhase + "-" + throwable.getMessage());
                                                }
                                            },
                 // 1 concurrent call, messages are auto-completed, auto-renew duration

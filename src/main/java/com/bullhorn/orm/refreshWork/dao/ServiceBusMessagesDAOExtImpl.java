@@ -4,7 +4,6 @@ import com.bullhorn.orm.refreshWork.model.TblIntegrationServiceBusMessages;
 import com.bullhorn.orm.timecurrent.dao.TimeCurrentDAOExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,9 +16,11 @@ public class ServiceBusMessagesDAOExtImpl implements ServiceBusMessagesDAOExt {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeCurrentDAOExt.class);
 
-    @Autowired
-    @Qualifier("refreshWorkJdbcTemplate")
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+
+    public ServiceBusMessagesDAOExtImpl(@Qualifier("refreshWorkJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void batchInsert(List<TblIntegrationServiceBusMessages> msgs) {

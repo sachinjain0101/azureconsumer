@@ -22,7 +22,7 @@ public class Consumer {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
 
-    final AzureConsumerDAO azureConsumerDAO;
+    private final AzureConsumerDAO azureConsumerDAO;
 
     @Autowired
     public Consumer(AzureConsumerDAO azureConsumerDAO) {

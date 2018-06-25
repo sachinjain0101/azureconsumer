@@ -1,31 +1,30 @@
 package com.bullhorn.orm.timecurrent.dao;
 
-import java.util.List;
+import com.bullhorn.orm.timecurrent.model.TblIntegrationClient;
+import com.bullhorn.orm.timecurrent.model.TblIntegrationErrors;
+import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-
-import com.bullhorn.orm.timecurrent.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 public class TimeCurrentDAOExtImpl implements TimeCurrentDAOExt {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TimeCurrentDAOExt.class);
 
-	@Autowired
-	@Qualifier("timeCurrentEntityManager")
 	private EntityManager em;
 
+	public TimeCurrentDAOExtImpl(@Qualifier("timeCurrentEntityManager")EntityManager em) {
+		this.em = em;
+	}
+
 	@Override
-	@Transactional("timeCurrentTransactionManager")
 	public List<TblIntegrationFrontOfficeSystem> findByStatus(boolean status) {
 		LOGGER.debug("Getting data for status - {}",status);
 		CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -40,7 +39,6 @@ public class TimeCurrentDAOExtImpl implements TimeCurrentDAOExt {
 	}
 
     @Override
-	@Transactional("timeCurrentTransactionManager")
     public List<TblIntegrationClient> findByIntegrationKey(String integrationKey) {
         LOGGER.debug("Getting data for integrationKey - {}",integrationKey);
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -55,7 +53,6 @@ public class TimeCurrentDAOExtImpl implements TimeCurrentDAOExt {
     }
 
     @Override
-	@Transactional("timeCurrentTransactionManager")
 	public void insertError(TblIntegrationErrors error){
 		em.persist(error);
 	}

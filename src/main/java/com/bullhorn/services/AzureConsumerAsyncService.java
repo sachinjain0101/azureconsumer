@@ -1,8 +1,6 @@
 package com.bullhorn.services;
 
-import com.bullhorn.json.model.AzureConfig;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
-import com.bullhorn.orm.timecurrent.dao.ErrorsDAO;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.microsoft.azure.servicebus.QueueClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +18,29 @@ public class AzureConsumerAsyncService {
     @Qualifier("consumerTaskExecutor")
     TaskExecutor executor;
 
-    private AzureConfig config;
     private AzureConsumerDAO azureConsumerDAO;
-    private ErrorsDAO errorsDAO;
+    private List<TblIntegrationFrontOfficeSystem> lstFOS;
+    private String queueName;
 
     @Autowired
-    public AzureConsumerAsyncService(@Qualifier("azureConfig") AzureConfig config, AzureConsumerDAO azureConsumerDAO, ErrorsDAO errorsDAO){
-        this.config = config;
+    public AzureConsumerAsyncService(AzureConsumerDAO azureConsumerDAO){
         this.azureConsumerDAO = azureConsumerDAO;
-        this.errorsDAO = errorsDAO;
+    }
+
+    public void setLstFOS(List<TblIntegrationFrontOfficeSystem> lstFOS) {
+        this.lstFOS = lstFOS;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
     public List<QueueClient> executeAsynchronously() {
 
-        List<TblIntegrationFrontOfficeSystem> lstFOS = config.getLstFOS();
         List<QueueClient> consumers = new ArrayList<>();
 
         for(TblIntegrationFrontOfficeSystem fos : lstFOS){
-            AzureConsumer consumer = new AzureConsumer(fos,config.getTopicName(), azureConsumerDAO, errorsDAO);
+            AzureConsumer consumer = new AzureConsumer(fos,queueName, azureConsumerDAO);
             consumers.add(consumer.getReceiveClient());
             executor.execute(consumer);
         }
