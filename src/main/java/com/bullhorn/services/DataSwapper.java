@@ -24,6 +24,7 @@ public class DataSwapper implements Runnable{
         this.azureConsumerDAO = azureConsumerDAO;
     }
 
+    @Override
     public void run() {
         LOGGER.debug("Running the Data Swapper");
         Iterable<TblAzureConsumer> tblAzureConsumers = azureConsumerDAO.findAll();

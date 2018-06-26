@@ -65,14 +65,14 @@ public class AzureConsumerApplication {
 		SpringApplication.run(AzureConsumerApplication.class, args);
 	}
 
-	@Bean(name = "azureConsumerConfig")
+	@Bean(name = "integrationConfig")
 	public List<TblIntegrationConfig> getConfig(){
 		return configDAO.findAll();
 	}
 
 
 	@Bean("consumerTaskExecutor")
-	@DependsOn("azureConsumerConfig")
+	@DependsOn("integrationConfig")
 	public TaskExecutor consumerTaskExecutor() {
 		LOGGER.debug("Starting Consumer Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -111,7 +111,7 @@ public class AzureConsumerApplication {
 	}
 
 	@Bean("dataSwapperAsyncSvc")
-	@DependsOn("consumerAsyncSvc")
+	@DependsOn("swapperTaskScheduler")
 	public DataSwapperAsyncService dataSwapperAsyncServiceInit(){
 		LOGGER.debug("DataSwapperAsyncService Constructed");
 		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_EXECUTE_INTERVAL")).collect(Collectors.toList()).get(0);
