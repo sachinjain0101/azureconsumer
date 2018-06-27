@@ -14,16 +14,16 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class AzureConsumer implements Runnable {
+public class Consumer implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AzureConsumer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
     private static final String INTEGRATION_KEY = "IntegrationKey";
     private TblIntegrationFrontOfficeSystem fos;
     private QueueClient receiveClient;
     private final String topicName;
     private final AzureConsumerDAO azureConsumerDAO;
 
-    public AzureConsumer(TblIntegrationFrontOfficeSystem fos, String topicName, AzureConsumerDAO azureConsumerDAO) {
+    public Consumer(TblIntegrationFrontOfficeSystem fos, String topicName, AzureConsumerDAO azureConsumerDAO) {
         this.fos = fos;
         this.topicName = topicName;
         this.azureConsumerDAO = azureConsumerDAO;
@@ -46,7 +46,7 @@ public class AzureConsumer implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.debug("AzureConsumer is running for {}", fos.getName());
+        LOGGER.debug("Consumer is running for {}", fos.getName());
         try {
             registerReceiver(receiveClient);
         } catch (Exception e) {
@@ -79,7 +79,7 @@ public class AzureConsumer implements Runnable {
                                                }
                                            },
                 // 1 concurrent call, messages are auto-completed, auto-renew duration
-                new MessageHandlerOptions(100, true, Duration.ofMinutes(10)));
+                new MessageHandlerOptions(50, true, Duration.ofMinutes(10)));
     }
 
 }

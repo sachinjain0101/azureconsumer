@@ -4,6 +4,8 @@ import com.bullhorn.orm.refreshWork.model.TblIntegrationServiceBusMessages;
 
 import java.util.List;
 
-public interface ServiceBusMessagesDAOExt {
+public interface RefreshWorkDAOExt {
     void batchInsert(List<TblIntegrationServiceBusMessages> msgs);
+
+    void batchInsertTest(List<String> msgs);
 }

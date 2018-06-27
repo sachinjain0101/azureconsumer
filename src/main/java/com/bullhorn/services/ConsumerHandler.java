@@ -5,25 +5,25 @@ import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.microsoft.azure.servicebus.QueueClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AzureConsumerAsyncService {
+public class ConsumerHandler {
 
     @Autowired
     @Qualifier("consumerTaskExecutor")
-    TaskExecutor executor;
+    ThreadPoolTaskExecutor executor;
 
     private AzureConsumerDAO azureConsumerDAO;
     private List<TblIntegrationFrontOfficeSystem> lstFOS;
     private String queueName;
 
     @Autowired
-    public AzureConsumerAsyncService(AzureConsumerDAO azureConsumerDAO){
+    public ConsumerHandler(AzureConsumerDAO azureConsumerDAO){
         this.azureConsumerDAO = azureConsumerDAO;
     }
 
@@ -40,7 +40,7 @@ public class AzureConsumerAsyncService {
         List<QueueClient> consumers = new ArrayList<>();
 
         for(TblIntegrationFrontOfficeSystem fos : lstFOS){
-            AzureConsumer consumer = new AzureConsumer(fos,queueName, azureConsumerDAO);
+            Consumer consumer = new Consumer(fos,queueName, azureConsumerDAO);
             consumers.add(consumer.getReceiveClient());
             executor.execute(consumer);
         }

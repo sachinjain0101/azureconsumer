@@ -2,31 +2,39 @@ package com.bullhorn.rest;
 
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.inmem.model.TblAzureConsumer;
+import com.bullhorn.services.SwapperHandler;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
-@Api(value = "Base resource for Opera-DataMapper")
-@RequestMapping("/maps")
-public class Consumer {
+@Api(value = "Base resource for Consumer")
+@RequestMapping("/azureConsumer")
+public class ConsumerSwapper {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerSwapper.class);
 
     private final AzureConsumerDAO azureConsumerDAO;
+    private final TaskScheduler scheduler;
+
+    private final SwapperHandler swapperHandler;
 
     @Autowired
-    public Consumer(AzureConsumerDAO azureConsumerDAO) {
+    public ConsumerSwapper(AzureConsumerDAO azureConsumerDAO, @Qualifier("swapperTaskScheduler") TaskScheduler taskScheduler
+			, @Qualifier("swapperHandler") SwapperHandler swapperHandler) {
         this.azureConsumerDAO = azureConsumerDAO;
+        this.scheduler = taskScheduler;
+        this.swapperHandler = swapperHandler;
     }
 
 	@ApiOperation(value="Check count in InMemory database")
@@ -41,10 +49,29 @@ public class Consumer {
 		return lst.size();
 	}
 
-	@ApiOperation(value="Test to see Azure Consumer is working or not.")
+	@ApiOperation(value="Test to see Azure ConsumerSwapper is working or not.")
 	@RequestMapping(value = "/test", method = RequestMethod.GET)
 	public String test() {
-		return "Opera Azure Consumer is running...";
+		return "Opera Azure ConsumerSwapper is running...";
+	}
+
+	@ApiOperation(value="Gets the Azure ConsumerSwapper thread information.")
+	@RequestMapping(value = "/threads", method = RequestMethod.GET)
+	public List<String> threads(){
+		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+		Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
+		List<String> lst = new ArrayList<>();
+		for(Thread t:threadArray){
+			lst.add(t.getName()+" : "+t.getState().toString());
+		}
+		return lst.stream().filter((s)->s.startsWith("DATA-SWAPPER")||s.startsWith("AZURE-CONSUMER")).collect(Collectors.toList());
+	}
+
+	@ApiOperation(value="Cancels the Swapper threads")
+	@RequestMapping(value = "/cancelSwappers", method = RequestMethod.GET)
+	public String cancelSwappers(){
+		swapperHandler.shutdown();
+		return "DONE";
 	}
 
 }

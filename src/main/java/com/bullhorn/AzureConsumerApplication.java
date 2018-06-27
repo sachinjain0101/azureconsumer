@@ -5,8 +5,8 @@ import com.bullhorn.orm.refreshWork.dao.ServiceBusMessagesDAO;
 import com.bullhorn.orm.timecurrent.dao.ConfigDAO;
 import com.bullhorn.orm.timecurrent.dao.FrontOfficeSystemDAO;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationConfig;
-import com.bullhorn.services.AzureConsumerAsyncService;
-import com.bullhorn.services.DataSwapperAsyncService;
+import com.bullhorn.services.ConsumerHandler;
+import com.bullhorn.services.SwapperHandler;
 import com.microsoft.azure.servicebus.QueueClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -73,8 +72,8 @@ public class AzureConsumerApplication {
 
 	@Bean("consumerTaskExecutor")
 	@DependsOn("integrationConfig")
-	public TaskExecutor consumerTaskExecutor() {
-		LOGGER.debug("Starting Consumer Task Executor");
+	public ThreadPoolTaskExecutor consumerTaskExecutor() {
+		LOGGER.debug("Starting ConsumerSwapper Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("AZURE_CONSUMER_POOL_SIZE")).collect(Collectors.toList()).get(0);
 		int poolSize = Integer.parseInt(val.getCfgValue());
@@ -86,47 +85,55 @@ public class AzureConsumerApplication {
 
 	private List<QueueClient> consumers = new ArrayList<>();
 
-	@Bean(name = "consumerAsyncSvc")
+	@Bean(name = "consumerHandler")
 	@DependsOn("consumerTaskExecutor")
-	public AzureConsumerAsyncService azureConsumerAsycSvcInit() {
-		LOGGER.debug("AzureConsumerAsyncService Constructed");
+	public ConsumerHandler consumerHandler() {
+		LOGGER.debug("ConsumerHandler Constructed");
 		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("AZURE_CONSUMER_QUEUE_NAME")).collect(Collectors.toList()).get(0);
 		String queueName = val.getCfgValue();
-		AzureConsumerAsyncService azureConsumerAsyncService = new AzureConsumerAsyncService(azureConsumerDAO);
-		azureConsumerAsyncService.setLstFOS(frontOfficeSystemDao.findByStatus(true));
-		azureConsumerAsyncService.setQueueName(queueName);
-		return azureConsumerAsyncService;
+		ConsumerHandler consumerHandler = new ConsumerHandler(azureConsumerDAO);
+		consumerHandler.setLstFOS(frontOfficeSystemDao.findByStatus(true));
+		consumerHandler.setQueueName(queueName);
+		return consumerHandler;
 	}
 
 	@Bean("swapperTaskScheduler")
-	@DependsOn("consumerAsyncSvc")
-	public ThreadPoolTaskScheduler swapperTaskExecutor() {
+	@DependsOn("consumerHandler")
+	public ThreadPoolTaskScheduler swapperTaskScheduler() {
 		LOGGER.debug("Starting Swapper Task Scheduler");
 		ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-		int poolSize = Integer.parseInt(val.getCfgValue());
+		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
+		int poolSize = Integer.parseInt(val1.getCfgValue());
 		threadPoolTaskScheduler.setPoolSize(poolSize);
+		threadPoolTaskScheduler.setWaitForTasksToCompleteOnShutdown(true);
+		TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("THREADPOOL_SCHEDULER_TERMINATION_TIME_INSECONDS")).collect(Collectors.toList()).get(0);
+		int terminationTime = Integer.parseInt(val2.getCfgValue());
+		threadPoolTaskScheduler.setAwaitTerminationSeconds(terminationTime);
 		threadPoolTaskScheduler.setThreadNamePrefix("DATA-SWAPPER-");
 		return threadPoolTaskScheduler;
 	}
 
-	@Bean("dataSwapperAsyncSvc")
+	@Bean("swapperHandler")
 	@DependsOn("swapperTaskScheduler")
-	public DataSwapperAsyncService dataSwapperAsyncServiceInit(){
-		LOGGER.debug("DataSwapperAsyncService Constructed");
-		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_EXECUTE_INTERVAL")).collect(Collectors.toList()).get(0);
-		long interval = Long.parseLong(val.getCfgValue());
-		DataSwapperAsyncService dataSwapperAsyncService = new DataSwapperAsyncService(serviceBusMessagesDAO,azureConsumerDAO);
-		dataSwapperAsyncService.setInterval(interval);
-		return dataSwapperAsyncService;
+	public SwapperHandler swapperHandler(){
+		LOGGER.debug("SwapperHandler Constructed");
+		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_EXECUTE_INTERVAL")).collect(Collectors.toList()).get(0);
+		long interval = Long.parseLong(val1.getCfgValue());
+        TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
+        int poolSize = Integer.parseInt(val2.getCfgValue());
+        SwapperHandler swapperHandler = new SwapperHandler(serviceBusMessagesDAO,azureConsumerDAO);
+		swapperHandler.setInterval(interval);
+		swapperHandler.setPoolSize(poolSize);
+		return swapperHandler;
 	}
 
 	@EventListener
 	public void init(ContextRefreshedEvent event) {
-		LOGGER.debug("Starting Azure Consumer");
-		this.consumers = azureConsumerAsycSvcInit().executeAsynchronously();
+		LOGGER.debug("Starting Azure ConsumerSwapper");
+		this.consumers = consumerHandler().executeAsynchronously();
 		LOGGER.debug("Starting Data Swapper");
-		dataSwapperAsyncServiceInit().executeAsynchronously();
+		swapperHandler().executeAsynchronously();
+		addAzureConsumerShutdownHook();
 	}
 
 	@PreDestroy
@@ -140,5 +147,25 @@ public class AzureConsumerApplication {
 			}
 		});
 	}
+
+	public void addAzureConsumerShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				LOGGER.info("Shutdown received");
+				swapperHandler().shutdown();
+			}
+		});
+
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				LOGGER.error("Uncaught Exception on " + t.getName() + " : " + e, e);
+				swapperHandler().shutdown();
+			}
+		});
+		LOGGER.info("Azure ConsumerSwapper ShutdownHook Added");
+	}
+
 
 }
