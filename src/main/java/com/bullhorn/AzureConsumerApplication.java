@@ -133,7 +133,7 @@ public class AzureConsumerApplication {
 		this.consumers = consumerHandler().executeAsynchronously();
 		LOGGER.debug("Starting Data Swapper");
 		swapperHandler().executeAsynchronously();
-		addAzureConsumerShutdownHook();
+		addDataSwapperShutdownHook();
 	}
 
 	@PreDestroy
@@ -148,7 +148,7 @@ public class AzureConsumerApplication {
 		});
 	}
 
-	public void addAzureConsumerShutdownHook() {
+	public void addDataSwapperShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -164,7 +164,7 @@ public class AzureConsumerApplication {
 				swapperHandler().shutdown();
 			}
 		});
-		LOGGER.info("Azure ConsumerSwapper ShutdownHook Added");
+		LOGGER.info("Data Swapper ShutdownHook Added");
 	}
 
 
