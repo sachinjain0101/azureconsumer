@@ -51,14 +51,14 @@ Their modification will not take affect without the service re-installation.
     OPTION: serviceaccount
     Defines account, under which the service should run.
   -->
-  
+  <!--
   <serviceaccount>
     <domain>CIGNIFY</domain>
     <user>sachin.jain</user>
-    <password>ShalinaJ12!@</password>
+    <password></password>
     <allowservicelogon>true</allowservicelogon>
   </serviceaccount>
-  
+  -->
   
   <!--
     OPTION: onfailure
@@ -123,7 +123,7 @@ SECTION: Executable management
     Time to wait for the service to gracefully shutdown the executable before we forcibly kill it
     Default value: 15 seconds
   -->
-  <stoptimeout>15 sec</stoptimeout>
+  <stoptimeout>120 sec</stoptimeout>
     
   <!--
     OPTION: stopparentprocessfirst
