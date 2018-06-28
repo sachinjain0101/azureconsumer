@@ -51,14 +51,14 @@ Their modification will not take affect without the service re-installation.
     OPTION: serviceaccount
     Defines account, under which the service should run.
   -->
-  <!--
+  
   <serviceaccount>
     <domain>CIGNIFY</domain>
     <user>sachin.jain</user>
     <password></password>
     <allowservicelogon>true</allowservicelogon>
   </serviceaccount>
-  -->
+  
   
   <!--
     OPTION: onfailure
