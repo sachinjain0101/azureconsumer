@@ -9,12 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,12 +28,12 @@ public class ConsumerSwapper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerSwapper.class);
 
     private final AzureConsumerDAO azureConsumerDAO;
-    private final TaskScheduler scheduler;
+    private final ThreadPoolTaskScheduler scheduler;
 
     private final SwapperHandler swapperHandler;
 
     @Autowired
-    public ConsumerSwapper(AzureConsumerDAO azureConsumerDAO, @Qualifier("swapperTaskScheduler") TaskScheduler taskScheduler
+    public ConsumerSwapper(AzureConsumerDAO azureConsumerDAO, @Qualifier("swapperTaskScheduler") ThreadPoolTaskScheduler taskScheduler
 			, @Qualifier("swapperHandler") SwapperHandler swapperHandler) {
         this.azureConsumerDAO = azureConsumerDAO;
         this.scheduler = taskScheduler;
@@ -67,12 +70,21 @@ public class ConsumerSwapper {
 		return lst.stream().filter((s)->s.startsWith("DATA-SWAPPER")||s.startsWith("AZURE-CONSUMER")).collect(Collectors.toList());
 	}
 
-	@ApiOperation(value="Cancels the Swapper threads")
-	@RequestMapping(value = "/cancelSwappers", method = RequestMethod.GET)
-	public String cancelSwappers(){
+	/*
+	@ApiOperation(value="Stops the Swapper threads")
+	@RequestMapping(value = "/stopSwappers", method = RequestMethod.GET)
+	public String stopSwappers(){
 		swapperHandler.shutdown();
-		return "DONE";
+		return "Azure Consumer - STOPPED";
 	}
+
+	@ApiOperation(value="Starts the Swapper threads")
+	@RequestMapping(value = "/startSwappers", method = RequestMethod.GET)
+	public String startSwappers(){
+		swapperHandler.executeAsynchronously();
+		return "Azure Consumer - STARTED";
+	}
+	*/
 
 }
 

@@ -65,10 +65,12 @@ public class TimeCurrentDAOExtImpl implements TimeCurrentDAOExt {
 		LOGGER.debug("Getting data for status - {} , cluster - {}",status, cluster);
 		List<String> lstFosNames = new ArrayList<>();
 		String fosSql = "SELECT * FROM TimeCurrent.dbo.tblIntegration_FrontOfficeSystem fos WHERE fos.RecordStatus = 1 AND fos.Name %s (%s)";
+
 		if (!cluster.isEmpty())
 			lstFosNames = getCfgValues(String.format(includeClusterSql, cluster));
 		else
 			lstFosNames = getCfgValues(excludeClusterSql);
+
 		String subSql = "";
 		String selectTemplate = "SELECT '%s' ";
 		for (int i = 0; i < lstFosNames.size(); i++) {

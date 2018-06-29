@@ -22,8 +22,8 @@ public class SwaggerConfig {
 	}
 
 	private ApiInfo metaInfo() {
-		return new ApiInfo("Opera Data Mapper API",
-				"Opera Data Mapper service takes care of Source to Target JSON mapping.", "1.0", "Terms of service",
+		return new ApiInfo("Opera Azure Consumer API",
+				"Opera Azure Consumer service takes care of getting the data from Azure Service Bus and then staging it into PNET DB.", "1.0", "Terms of service",
 				new Contact("Sachin Jain", "https://www.bullhorn.com", "sachin.jain@bullhorn.com"),
 				"Apache License Version 2.0", "https://www.apache.org/licenses/LICENSE-2.0");
 	}
