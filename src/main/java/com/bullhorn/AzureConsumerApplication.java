@@ -5,6 +5,7 @@ import com.bullhorn.orm.refreshWork.dao.ServiceBusMessagesDAO;
 import com.bullhorn.orm.timecurrent.dao.ConfigDAO;
 import com.bullhorn.orm.timecurrent.dao.FrontOfficeSystemDAO;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationConfig;
+import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.bullhorn.services.ConsumerHandler;
 import com.bullhorn.services.SwapperHandler;
 import com.microsoft.azure.servicebus.QueueClient;
@@ -64,9 +65,15 @@ public class AzureConsumerApplication {
 		SpringApplication.run(AzureConsumerApplication.class, args);
 	}
 
+	private List<TblIntegrationFrontOfficeSystem> lstFOS = null;
+
 	@Bean(name = "integrationConfig")
 	public List<TblIntegrationConfig> getConfig(){
-		return configDAO.findAll();
+		String cluster = (env.getProperty("azureConsumer.clusterName")!=null)?env.getProperty("azureConsumer.clusterName"):"";
+		LOGGER.debug("Cluster info : {} & isEmpty : {}",cluster,cluster.isEmpty());
+		// VIMP: lstFOS drives the AzureConsumer ThreadPool size
+		lstFOS = frontOfficeSystemDao.findByStatus(true,cluster);
+    	return configDAO.findAll();
 	}
 
 
@@ -75,9 +82,7 @@ public class AzureConsumerApplication {
 	public ThreadPoolTaskExecutor consumerTaskExecutor() {
 		LOGGER.debug("Starting ConsumerSwapper Task Executor");
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("AZURE_CONSUMER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-		int poolSize = Integer.parseInt(val.getCfgValue());
-		executor.setCorePoolSize(poolSize);
+		executor.setCorePoolSize(lstFOS.size());
 		executor.setMaxPoolSize(100);
 		executor.setThreadNamePrefix("AZURE-CONSUMER-");
 		return executor;
@@ -92,7 +97,7 @@ public class AzureConsumerApplication {
 		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("AZURE_CONSUMER_QUEUE_NAME")).collect(Collectors.toList()).get(0);
 		String queueName = val.getCfgValue();
 		ConsumerHandler consumerHandler = new ConsumerHandler(azureConsumerDAO);
-		consumerHandler.setLstFOS(frontOfficeSystemDao.findByStatus(true));
+		consumerHandler.setLstFOS(lstFOS);
 		consumerHandler.setQueueName(queueName);
 		return consumerHandler;
 	}
@@ -102,9 +107,9 @@ public class AzureConsumerApplication {
 	public ThreadPoolTaskScheduler swapperTaskScheduler() {
 		LOGGER.debug("Starting Swapper Task Scheduler");
 		ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-		int poolSize = Integer.parseInt(val1.getCfgValue());
-		threadPoolTaskScheduler.setPoolSize(poolSize);
+		//TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
+		//int poolSize = Integer.parseInt(val1.getCfgValue());
+		threadPoolTaskScheduler.setPoolSize(lstFOS.size());
 		threadPoolTaskScheduler.setWaitForTasksToCompleteOnShutdown(true);
 		TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("THREADPOOL_SCHEDULER_TERMINATION_TIME_INSECONDS")).collect(Collectors.toList()).get(0);
 		int terminationTime = Integer.parseInt(val2.getCfgValue());
@@ -119,11 +124,12 @@ public class AzureConsumerApplication {
 		LOGGER.debug("SwapperHandler Constructed");
 		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_EXECUTE_INTERVAL")).collect(Collectors.toList()).get(0);
 		long interval = Long.parseLong(val1.getCfgValue());
-        TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-        int poolSize = Integer.parseInt(val2.getCfgValue());
+        //TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
+        //int poolSize = Integer.parseInt(val2.getCfgValue());
         SwapperHandler swapperHandler = new SwapperHandler(serviceBusMessagesDAO,azureConsumerDAO);
 		swapperHandler.setInterval(interval);
-		swapperHandler.setPoolSize(poolSize);
+		//Swapper poolSize has to be 1 because it is just reponsible for swapping data and it is not suppoed to have any special logic
+		swapperHandler.setPoolSize(1);
 		return swapperHandler;
 	}
 

@@ -9,6 +9,7 @@ import java.util.List;
 public interface TimeCurrentDAOExt {
 
 	List<TblIntegrationFrontOfficeSystem> findByStatus(boolean status);
+	List<TblIntegrationFrontOfficeSystem> findByStatus(boolean status, String cluster);
 	List<TblIntegrationClient> findByIntegrationKey(String integrationKey);
 
 	void insertError(TblIntegrationErrors error);
