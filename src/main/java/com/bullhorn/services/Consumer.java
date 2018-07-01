@@ -47,6 +47,7 @@ public class Consumer implements Runnable {
     @Override
     public void run() {
         LOGGER.debug("Consumer is running for {}", fos.getName());
+        LOGGER.debug("Listening on {}", fos.getAzureEndPoint());
         try {
             registerReceiver(receiveClient);
         } catch (Exception e) {

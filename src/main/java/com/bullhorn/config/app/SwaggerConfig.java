@@ -22,10 +22,15 @@ public class SwaggerConfig {
 	}
 
 	private ApiInfo metaInfo() {
-		return new ApiInfo("Opera Azure Consumer API",
-				"Opera Azure Consumer service takes care of getting the data from Azure Service Bus and then staging it into PNET DB.", "1.0", "Terms of service",
-				new Contact("Sachin Jain", "https://www.bullhorn.com", "sachin.jain@bullhorn.com"),
-				"Apache License Version 2.0", "https://www.apache.org/licenses/LICENSE-2.0");
+		return new ApiInfo("Opera Azure Consumer API"
+				, "This service takes care of getting the data from Azure Service Bus and then staging it into PNET DB. \n\n" +
+				"Target Table: RefreshWork.dbo.tblIntegrationServiceBusMessages \n\n" +
+				"NOTE: It is a multi threaded / multi instance application"
+				, "1.0"
+				, "Terms of service"
+				, new Contact("Sachin Jain", "https://www.bullhorn.com", "sachin.jain@bullhorn.com")
+				, "Apache License Version 2.0"
+				, "https://www.apache.org/licenses/LICENSE-2.0");
 	}
 
 }
