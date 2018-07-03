@@ -1,5 +1,6 @@
 package com.bullhorn.services;
 
+import com.bullhorn.app.Constants;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.refreshWork.dao.ServiceBusMessagesDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ public class SwapperHandler {
         //taskScheduler.scheduleWithFixedDelay(new Swapper(serviceBusMessagesDAO,azureConsumerDAO),interval);
         for (int i = 1; i <= poolSize; i++) {
             Swapper swapper = new Swapper(serviceBusMessagesDAO, azureConsumerDAO, interval);
+            taskScheduler.setThreadNamePrefix(Constants.DATA_SWAPPER_THREAD_POOL_PREFIX);
             Future<?> future = taskScheduler.submit(swapper);
             cancellableFutures.put(swapper, future);
         }

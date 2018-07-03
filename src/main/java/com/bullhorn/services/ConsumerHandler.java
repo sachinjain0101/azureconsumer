@@ -1,5 +1,6 @@
 package com.bullhorn.services;
 
+import com.bullhorn.app.Constants;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.timecurrent.model.TblIntegrationFrontOfficeSystem;
 import com.microsoft.azure.servicebus.QueueClient;
@@ -42,6 +43,7 @@ public class ConsumerHandler {
         for(TblIntegrationFrontOfficeSystem fos : lstFOS){
             Consumer consumer = new Consumer(fos,queueName, azureConsumerDAO);
             consumers.add(consumer.getReceiveClient());
+            executor.setThreadNamePrefix(String.format(Constants.AZURE_CONSUMER_THREAD_POOL_PREFIX,fos.getName()));
             executor.execute(consumer);
         }
 

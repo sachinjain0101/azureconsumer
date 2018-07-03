@@ -1,5 +1,6 @@
 package com.bullhorn.rest;
 
+import com.bullhorn.app.Constants;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.inmem.model.TblAzureConsumer;
 import com.bullhorn.services.SwapperHandler;
@@ -23,9 +24,9 @@ import java.util.stream.Collectors;
 @RestController
 @Api(value = "Base resource for Consumer")
 @RequestMapping("/azureConsumer")
-public class ConsumerSwapper {
+public class DataConsumerSwapper {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerSwapper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DataConsumerSwapper.class);
 
     private final AzureConsumerDAO azureConsumerDAO;
     private final ThreadPoolTaskScheduler scheduler;
@@ -33,7 +34,7 @@ public class ConsumerSwapper {
     private final SwapperHandler swapperHandler;
 
     @Autowired
-    public ConsumerSwapper(AzureConsumerDAO azureConsumerDAO, @Qualifier("swapperTaskScheduler") ThreadPoolTaskScheduler taskScheduler
+    public DataConsumerSwapper(AzureConsumerDAO azureConsumerDAO, @Qualifier("swapperTaskScheduler") ThreadPoolTaskScheduler taskScheduler
 			, @Qualifier("swapperHandler") SwapperHandler swapperHandler) {
         this.azureConsumerDAO = azureConsumerDAO;
         this.scheduler = taskScheduler;
@@ -67,7 +68,7 @@ public class ConsumerSwapper {
 		for(Thread t:threadArray){
 			lst.add(t.getName()+" : "+t.getState().toString());
 		}
-		return lst.stream().filter((s)->s.startsWith("DATA-SWAPPER")||s.startsWith("AZURE-CONSUMER")).collect(Collectors.toList());
+		return lst.stream().filter((s)->s.startsWith(Constants.AZURE_CONSUMER)||s.startsWith(Constants.DATA_SWAPPER)).collect(Collectors.toList());
 	}
 
 	/*

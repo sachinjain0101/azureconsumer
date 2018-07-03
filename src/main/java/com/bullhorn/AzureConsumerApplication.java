@@ -1,5 +1,6 @@
 package com.bullhorn;
 
+import com.bullhorn.app.Constants;
 import com.bullhorn.orm.inmem.dao.AzureConsumerDAO;
 import com.bullhorn.orm.refreshWork.dao.ServiceBusMessagesDAO;
 import com.bullhorn.orm.timecurrent.dao.ConfigDAO;
@@ -84,7 +85,6 @@ public class AzureConsumerApplication {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(lstFOS.size());
 		executor.setMaxPoolSize(100);
-		executor.setThreadNamePrefix("AZURE-CONSUMER-");
 		return executor;
 	}
 
@@ -94,7 +94,7 @@ public class AzureConsumerApplication {
 	@DependsOn("consumerTaskExecutor")
 	public ConsumerHandler consumerHandler() {
 		LOGGER.debug("ConsumerHandler Constructed");
-		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals("AZURE_CONSUMER_QUEUE_NAME")).collect(Collectors.toList()).get(0);
+		TblIntegrationConfig val = getConfig().stream().filter((k) -> k.getCfgKey().equals(Constants.AZURE_CONSUMER_QUEUE_NAME)).collect(Collectors.toList()).get(0);
 		String queueName = val.getCfgValue();
 		ConsumerHandler consumerHandler = new ConsumerHandler(azureConsumerDAO);
 		consumerHandler.setLstFOS(lstFOS);
@@ -107,11 +107,9 @@ public class AzureConsumerApplication {
 	public ThreadPoolTaskScheduler swapperTaskScheduler() {
 		LOGGER.debug("Starting Swapper Task Scheduler");
 		ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-		//TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-		//int poolSize = Integer.parseInt(val1.getCfgValue());
 		threadPoolTaskScheduler.setPoolSize(lstFOS.size());
 		threadPoolTaskScheduler.setWaitForTasksToCompleteOnShutdown(true);
-		TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("THREADPOOL_SCHEDULER_TERMINATION_TIME_INSECONDS")).collect(Collectors.toList()).get(0);
+		TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals(Constants.DATA_SWAPPER_THREADPOOL_SCHEDULER_TERMINATION_TIME_INSECONDS)).collect(Collectors.toList()).get(0);
 		int terminationTime = Integer.parseInt(val2.getCfgValue());
 		threadPoolTaskScheduler.setAwaitTerminationSeconds(terminationTime);
 		threadPoolTaskScheduler.setThreadNamePrefix("DATA-SWAPPER-");
@@ -122,10 +120,8 @@ public class AzureConsumerApplication {
 	@DependsOn("swapperTaskScheduler")
 	public SwapperHandler swapperHandler(){
 		LOGGER.debug("SwapperHandler Constructed");
-		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_EXECUTE_INTERVAL")).collect(Collectors.toList()).get(0);
+		TblIntegrationConfig val1 = getConfig().stream().filter((k) -> k.getCfgKey().equals(Constants.DATA_SWAPPER_EXECUTE_INTERVAL)).collect(Collectors.toList()).get(0);
 		long interval = Long.parseLong(val1.getCfgValue());
-        //TblIntegrationConfig val2 = getConfig().stream().filter((k) -> k.getCfgKey().equals("DATA_SWAPPER_POOL_SIZE")).collect(Collectors.toList()).get(0);
-        //int poolSize = Integer.parseInt(val2.getCfgValue());
         SwapperHandler swapperHandler = new SwapperHandler(serviceBusMessagesDAO,azureConsumerDAO);
 		swapperHandler.setInterval(interval);
 		//Swapper poolSize has to be 1 because it is just reponsible for swapping data and it is not suppoed to have any special logic
